@@ -1,0 +1,36 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Project automation
+
+on:
+  issues:
+    types: [labeled, unlabeled]
+
+env:
+  columnName: github.event.label.name
+
+jobs:
+  set-column-name:
+    runs-on: ubuntu-latest
+    outputs:
+      columnName: ""
+    steps:
+      - name: handle-postponed
+        if: github.event.labels.*.name == 'postponed'
+        run: echo "::set-output name=columnName::Postponed"
+      - name: handle-in-progress
+        if: github.event.labels.*.name == 'in progress'
+        run: echo "::set-output name=columnName::In Progress"
+      - name: handle-no-label
+        if: (github.event.labels.*.name == 'postponed' || github.event.labels.*.name == 'in progress') == false
+        run: echo "::set-output name=columnName::To do"
+  move-issue:
+    runs-on: ubuntu-latest
+    needs: set-column-name
+    steps:
+      - name: move-to-column
+        uses: alex-page/github-project-automation-plus@v0.8.1
+        with:
+          project: Job Board
+          column: ${{needs.set-column-name.outputs.columnName}}
+          repo-token: ${{ secrets.MSU_AUTOMATION_PAT }}
