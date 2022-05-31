@@ -112,3 +112,21 @@
 {
 	return _capture[_group].end > 0 && _capture[_group].begin < _string.len() ? _string.slice(_capture[_group].begin, _capture[_group].end) : null;
 }
+
+::MSU.deepClone <- function( _object )
+{
+	local ret;
+	if (typeof _object == "table" || typeof _object == "array")
+	{
+		foreach (key, value in _object)
+		{
+			if (typeof _object == "table") ret[key] <- ::MSU.deepClone(value);
+			else ret.push(::MSU.deepClone(value));
+		}
+	}
+	else
+	{
+		ret = clone _object;
+	}
+	return ret;
+}
