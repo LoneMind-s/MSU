@@ -4,6 +4,7 @@
 	o.m.LastLevelOnUpdateLevelCalled <- 0;
 	o.m.ScheduledChangesSkills <- [];
 	o.m.IsPreviewing <- false;
+	o.m.QueuedPreviewChanges <- {};
 	o.PreviewProperty <- {};
 
 	local update = o.update;
@@ -219,7 +220,7 @@
 			_movementTile,
 		], false);
 
-		if (::MSU.Skills.QueuedPreviewChanges.len() == 0) return;
+		if (this.m.QueuedPreviewChanges.len() == 0) return;
 
 		local propertiesClone = this.getActor().getBaseProperties().getClone();
 
@@ -230,7 +231,7 @@
 			{
 				if (!skill.isGarbage())
 				{
-					foreach (caller, changes in ::MSU.Skills.QueuedPreviewChanges)
+					foreach (caller, changes in this.m.QueuedPreviewChanges)
 					{
 						if (caller == skill)
 						{
@@ -245,7 +246,7 @@
 					if (_function == "executeScheduledChanges") skill[_function]();
 					else skill[_function](propertiesClone);
 
-					foreach (caller, changes in ::MSU.Skills.QueuedPreviewChanges)
+					foreach (caller, changes in this.m.QueuedPreviewChanges)
 					{
 						if (caller == skill)
 						{
@@ -274,7 +275,7 @@
 		getChange("onAfterUpdate");
 		getChange("executeScheduledChanges");
 
-		foreach (changes in ::MSU.Skills.QueuedPreviewChanges)
+		foreach (changes in this.m.QueuedPreviewChanges)
 		{
 			foreach (change in changes)
 			{
@@ -308,7 +309,7 @@
 			}
 		}
 
-		::MSU.Skills.QueuedPreviewChanges.clear();
+		this.m.QueuedPreviewChanges.clear();
 	}
 
 	//Vanilla Overwrites start

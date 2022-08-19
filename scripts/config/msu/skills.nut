@@ -4,7 +4,6 @@
 		"getActionPointCost",
 		"getFatigueCost"
 	],
-	QueuedPreviewChanges = {},
 	SoftResetFields = [
 		"ActionPointCost",
 		"FatigueCost",
@@ -47,8 +46,8 @@
 	// Private
 	function modifyPreview( _caller, _targetSkill, _field, _newChange, _multiplicative )
 	{
-		if (!(_caller in this.QueuedPreviewChanges)) this.QueuedPreviewChanges[_caller] <- [];
-		this.QueuedPreviewChanges[_caller].push({
+		if (!(_caller in _caller.getContainer().m.QueuedPreviewChanges)) _caller.getContainer().m.QueuedPreviewChanges[_caller] <- [];
+		_caller.getContainer().m.QueuedPreviewChanges[_caller].push({
 			TargetSkill = _targetSkill,
 			Field = _field,
 			ValueBefore = 0,
