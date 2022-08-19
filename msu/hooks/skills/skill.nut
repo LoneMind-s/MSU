@@ -296,6 +296,15 @@
 		return ret;
 	}
 
+	local onScheduledTargetHit = o.onScheduledTargetHit;
+	o.onScheduledTargetHit = function( _info )
+	{
+		this.getContainer().m.PropertiesForAttack = _info.Properties;
+		local ret = onScheduledTargetHit(_info);
+		this.getContainer().m.PropertiesForAttack = null;
+		return ret;
+	}
+
 	o.getDamageType <- function()
 	{
 		return this.m.DamageType;

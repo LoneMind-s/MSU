@@ -1,4 +1,5 @@
 ::mods_hookNewObject("skills/skill_container", function(o) {
+	o.m.PropertiesForAttack <- null;
 	o.m.LastLevelOnUpdateLevelCalled <- 0;
 	o.m.ScheduledChangesSkills <- [];
 	o.m.IsPreviewing <- false;
