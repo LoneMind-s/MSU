@@ -302,6 +302,7 @@
 		this.getContainer().m.PropertiesForAttack = _info.Properties;
 		local ret = onScheduledTargetHit(_info);
 		this.getContainer().m.PropertiesForAttack = null;
+		this.getContainer().m.HitInfo = null;
 		return ret;
 	}
 

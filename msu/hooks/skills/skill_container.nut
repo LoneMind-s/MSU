@@ -1,4 +1,5 @@
 ::mods_hookNewObject("skills/skill_container", function(o) {
+	o.m.HitInfo <- null;
 	o.m.PropertiesForAttack <- null;
 	o.m.LastLevelOnUpdateLevelCalled <- 0;
 	o.m.ScheduledChangesSkills <- [];
@@ -399,6 +400,9 @@
 
 	o.onBeforeTargetHit = function( _caller, _targetEntity, _hitInfo )
 	{
+		// This is reset to null at the end of the onScheduledTargetHit function of skill.nut
+		this.m.HitInfo = _hitInfo;
+
 		this.callSkillsFunction("onBeforeTargetHit", [
 			_caller,
 			_targetEntity,
