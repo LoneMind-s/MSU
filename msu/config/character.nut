@@ -1,3 +1,6 @@
+::Const.Combat.HitChanceMin <- 5;
+::Const.Combat.HitChanceMax <- 95;
+
 ::Const.ItemActionOrder <- {
 	First = 0,
 	Early = 1000,
