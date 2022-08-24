@@ -899,6 +899,9 @@
 		local damageDirect = _info.Properties.getDamageDirect(_info.Skill);
 		local injuries;
 
+
+		// Bring the MSU Damage system here instead of skill_container onBeforeTargetHit
+
 		if (this.m.InjuriesOnBody != null && bodyPart == this.Const.BodyPart.Body)
 		{
 			injuries = this.m.InjuriesOnBody;
