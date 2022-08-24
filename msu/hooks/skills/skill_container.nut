@@ -204,6 +204,24 @@
 		]);
 	}
 
+	o.onBeforeGettingHit <- function( _attacker, _skill, _hitinfo )
+	{
+		this.callSkillsFunction("onBeforeTargetHit", [
+			_attacker,
+			_skill,
+			_hitInfo
+		]);
+	}
+
+	o.onGettingHit <- function( _attacker, _skill, _hitinfo )
+	{
+		this.callSkillsFunction("onGettingHit", [
+			_attacker,
+			_skill,
+			_hitInfo
+		]);
+	}
+
 	o.onAffordablePreview <- function( _skill, _movementTile )
 	{
 		this.PreviewProperty.clear();

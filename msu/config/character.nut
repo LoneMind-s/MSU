@@ -5,6 +5,12 @@
 ::Const.Combat.AIRangedAttackDiversionChance <- 25;
 ::Const.Combat.BeginnerDifficultyHitchanceBonus <- 5;
 ::Const.Combat.BeginnerDifficultyDefenseBonus <- 5;
+::Const.CharacterProperties.getDamageDirect <- function( _skill = null)
+{
+	if (_skill == null) return ::Math.minf(1.0, this.DamageDirectMult + this.DamageDirectAdd);
+
+	return ::Math.minf(1.0, this.DamageDirectMult * (_skill.m.DirectDamageMult + this.DamageDirectAdd + (_skill.m.IsRanged ? this.DamageDirectRangedAdd : this.DamageDirectMeleeAdd)));
+}
 
 ::Const.ItemActionOrder <- {
 	First = 0,

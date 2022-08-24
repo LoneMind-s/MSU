@@ -278,6 +278,14 @@
 	{
 	}
 
+	o.onBeforeGettingHit <- function( _attacker, _skill, _hitinfo )
+	{
+	}
+
+	o.onGettingHit <- function( _attacker, _skill, _hitinfo )
+	{
+	}
+
 	o.onAffordablePreview <- function( _skill, _movementTile )
 	{
 	}
@@ -665,7 +673,8 @@
 				User = _user,
 				TargetEntity = _targetEntity,
 				Properties = properties,
-				DistanceToTarget = distanceToTarget
+				DistanceToTarget = distanceToTarget,
+				DefenderProperties = defenderProperties
 			};
 
 			if (this.m.IsShowingProjectile && this.m.ProjectileType != 0 && _user.getTile().getDistanceTo(_targetEntity.getTile()) >= this.Const.Combat.SpawnProjectileMinDist && (!_user.isHiddenToPlayer() || !_targetEntity.isHiddenToPlayer()))
@@ -788,6 +797,171 @@
 			}
 
 			return false;
+		}
+	}
+
+	function divertAttack( _user, _targetEntity )
+	{
+		local tile = _targetEntity.getTile();
+		local dist = _user.getTile().getDistanceTo(tile);
+
+		if (dist < this.Const.Combat.DiversionMinDist)
+		{
+			return;
+		}
+
+		local d = _user.getTile().getDirectionTo(tile);
+
+		if (dist >= this.Const.Combat.DiversionSpreadMinDist)
+		{
+			d = this.Math.rand(0, this.Const.Direction.COUNT - 1);
+		}
+
+		if (tile.hasNextTile(d))
+		{
+			local divertTile = tile.getNextTile(d);
+			local levelDifference = divertTile.Level - _targetEntity.getTile().Level;
+
+			if (divertTile.IsOccupiedByActor && levelDifference <= this.Const.Combat.DiversionMaxLevelDifference)
+			{
+				this.attackEntity(_user, divertTile.getEntity(), false, true);
+			}
+			else
+			{
+				local flip = !this.m.IsProjectileRotated && _targetEntity.getPos().X > _user.getPos().X;
+				local time = 0;
+
+				if (this.m.IsShowingProjectile && this.m.ProjectileType != 0 && _user.getTile().getDistanceTo(tile) >= this.Const.Combat.SpawnProjectileMinDist)
+				{
+					time = this.Tactical.spawnProjectileEffect(this.Const.ProjectileSprite[this.m.ProjectileType], _user.getTile(), divertTile, 1.0, this.m.ProjectileTimeScale, this.m.IsProjectileRotated, flip);
+				}
+
+				this.getContainer().setBusy(true);
+
+				if (this.m.SoundOnMiss.len() != 0)
+				{
+					this.Sound.play(this.m.SoundOnMiss[this.Math.rand(0, this.m.SoundOnMiss.len() - 1)], this.Const.Sound.Volume.Skill * this.m.SoundVolume, divertTile.Pos);
+				}
+
+				if (divertTile.IsEmpty && !divertTile.IsCorpseSpawned && this.Const.Tactical.TerrainSubtypeAllowProjectileDecals[divertTile.Subtype] && this.Const.ProjectileDecals[this.m.ProjectileType].len() != 0 && this.Math.rand(0, 100) < this.Const.Combat.SpawnArrowDecalChance)
+				{
+					local info = {
+						Skill = this,
+						Container = this.getContainer(),
+						User = _user,
+						TileHit = divertTile
+					};
+
+					if (this.m.IsShowingProjectile && _user.getTile().getDistanceTo(divertTile) >= this.Const.Combat.SpawnProjectileMinDist && (!_user.isHiddenToPlayer() || divertTile.IsVisibleForPlayer))
+					{
+						this.Time.scheduleEvent(this.TimeUnit.Virtual, time, this.onScheduledProjectileSpawned, info);
+					}
+					else
+					{
+						this.onScheduledProjectileSpawned(info);
+					}
+				}
+			}
+		}
+	}
+
+	function onScheduledTargetHit( _info )
+	{
+		_info.Container.setBusy(false);
+
+		if (!_info.TargetEntity.isAlive())
+		{
+			return;
+		}
+
+		local partHit = this.Math.rand(1, 100);
+		local bodyPart = this.Const.BodyPart.Body;
+		local bodyPartDamageMult = 1.0;
+
+		if (partHit <= _info.Properties.getHitchance(this.Const.BodyPart.Head))
+		{
+			bodyPart = this.Const.BodyPart.Head;
+		}
+		else
+		{
+			bodyPart = this.Const.BodyPart.Body;
+		}
+
+		bodyPartDamageMult = bodyPartDamageMult * _info.Properties.DamageAgainstMult[bodyPart];
+		local damageMult = this.m.IsRanged ? _info.Properties.RangedDamageMult : _info.Properties.MeleeDamageMult;
+		damageMult = damageMult * _info.Properties.DamageTotalMult;
+		// local damageRegular = this.Math.rand(_info.Properties.DamageRegularMin, _info.Properties.DamageRegularMax) * _info.Properties.DamageRegularMult;
+		local damageRegular = ::Math.rand(_info.Properties.getDamageRegularMin(), _info.Properties.getDamageRegularMax());
+		// local damageArmor = this.Math.rand(_info.Properties.DamageRegularMin, _info.Properties.DamageRegularMax) * _info.Properties.DamageArmorMult;
+		local damageArmor = ::Math.rand(_info.Properties.getDamageArmorMin(), _info.Properties.getDamageArmorMax());
+		damageRegular = this.Math.max(0, damageRegular + _info.DistanceToTarget * _info.Properties.DamageAdditionalWithEachTile);
+		damageArmor = this.Math.max(0, damageArmor + _info.DistanceToTarget * _info.Properties.DamageAdditionalWithEachTile);
+		local damageDirect = _info.Properties.getDamageDirect(_info.Skill);
+		local injuries;
+
+		if (this.m.InjuriesOnBody != null && bodyPart == this.Const.BodyPart.Body)
+		{
+			injuries = this.m.InjuriesOnBody;
+		}
+		else if (this.m.InjuriesOnHead != null && bodyPart == this.Const.BodyPart.Head)
+		{
+			injuries = this.m.InjuriesOnHead;
+		}
+
+		local hitInfo = clone this.Const.Tactical.HitInfo;
+		hitInfo.AttackerProperties = _info.Properties;
+		hitInfo.DefenderProperties = _info.DefenderProperties;
+		hitInfo.DamageRegular = damageRegular * damageMult;
+		hitInfo.DamageArmor = damageArmor * damageMult;
+		hitInfo.DamageDirect = damageDirect;
+		hitInfo.DamageFatigue = this.Const.Combat.FatigueReceivedPerHit * _info.Properties.FatigueDealtPerHitMult;
+		hitInfo.DamageMinimum = _info.Properties.DamageMinimum;
+		hitInfo.BodyPart = bodyPart;
+		hitInfo.BodyDamageMult = bodyPartDamageMult;
+		hitInfo.FatalityChanceMult = _info.Properties.FatalityChanceMult;
+		hitInfo.Injuries = injuries;
+		hitInfo.InjuryThresholdMult = _info.Properties.ThresholdToInflictInjuryMult;
+		hitInfo.Tile = _info.TargetEntity.getTile();
+		_info.Container.onBeforeTargetHit(_info.Skill, _info.TargetEntity, hitInfo);
+		_info.TargetEntity.getSkills().onBeforeGettingHit(_info.User, _info.Skill, hitInfo);
+		local pos = _info.TargetEntity.getPos();
+		local hasArmorHitSound = _info.TargetEntity.getItems().getAppearance().ImpactSound[bodyPart].len() != 0;
+		_info.TargetEntity.onDamageReceived(_info.User, _info.Skill, hitInfo);
+
+		if (hitInfo.DamageInflictedHitpoints >= this.Const.Combat.PlayHitSoundMinDamage)
+		{
+			if (this.m.SoundOnHitHitpoints.len() != 0)
+			{
+				this.Sound.play(this.m.SoundOnHitHitpoints[this.Math.rand(0, this.m.SoundOnHitHitpoints.len() - 1)], this.Const.Sound.Volume.Skill * this.m.SoundVolume, pos);
+			}
+		}
+
+		if (hitInfo.DamageInflictedHitpoints == 0 && hitInfo.DamageInflictedArmor >= this.Const.Combat.PlayHitSoundMinDamage)
+		{
+			if (this.m.SoundOnHitArmor.len() != 0)
+			{
+				this.Sound.play(this.m.SoundOnHitArmor[this.Math.rand(0, this.m.SoundOnHitArmor.len() - 1)], this.Const.Sound.Volume.Skill * this.m.SoundVolume, pos);
+			}
+		}
+
+		if (typeof _info.User == "instance" && _info.User.isNull() || !_info.User.isAlive() || _info.User.isDying())
+		{
+			return;
+		}
+
+		_info.Container.onTargetHit(_info.Skill, _info.TargetEntity, hitInfo.BodyPart, hitInfo.DamageInflictedHitpoints, hitInfo.DamageInflictedArmor);
+		if (_info.TargetEntity.isAlive()) _info.TargetEntity.getSkills().onGettingHit(_info.User, _info.Skill, hitInfo);
+		_info.User.getItems().onDamageDealt(_info.TargetEntity, this, hitInfo);
+
+		if (hitInfo.DamageInflictedHitpoints >= this.Const.Combat.SpawnBloodMinDamage && !_info.Skill.isRanged() && (_info.TargetEntity.getBloodType() == this.Const.BloodType.Red || _info.TargetEntity.getBloodType() == this.Const.BloodType.Dark))
+		{
+			_info.User.addBloodied();
+			local item = _info.User.getItems().getItemAtSlot(this.Const.ItemSlot.Mainhand);
+
+			if (item != null && item.isItemType(this.Const.Items.ItemType.MeleeWeapon))
+			{
+				item.setBloodied(true);
+			}
 		}
 	}
 });
