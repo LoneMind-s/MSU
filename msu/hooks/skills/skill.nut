@@ -928,6 +928,8 @@
 		local hasArmorHitSound = _info.TargetEntity.getItems().getAppearance().ImpactSound[bodyPart].len() != 0;
 		_info.TargetEntity.onDamageReceived(_info.User, _info.Skill, hitInfo);
 
+		// TODO: An issue is that onAfterDamageReceived is only called when the target entity is alive and it is called via <actor>.onDamageReceived, and not this function
+
 		if (hitInfo.DamageInflictedHitpoints >= this.Const.Combat.PlayHitSoundMinDamage)
 		{
 			if (this.m.SoundOnHitHitpoints.len() != 0)
