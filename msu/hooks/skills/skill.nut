@@ -674,7 +674,7 @@
 				TargetEntity = _targetEntity,
 				Properties = properties,
 				DistanceToTarget = distanceToTarget,
-				DefenderProperties = defenderProperties
+				PropertiesForDefense = defenderProperties
 			};
 
 			if (this.m.IsShowingProjectile && this.m.ProjectileType != 0 && _user.getTile().getDistanceTo(_targetEntity.getTile()) >= this.Const.Combat.SpawnProjectileMinDist && (!_user.isHiddenToPlayer() || !_targetEntity.isHiddenToPlayer()))
@@ -909,8 +909,8 @@
 		}
 
 		local hitInfo = clone this.Const.Tactical.HitInfo;
-		hitInfo.AttackerProperties = _info.Properties;
-		hitInfo.DefenderProperties = _info.DefenderProperties;
+		hitInfo.PropertiesForUse = _info.Properties;
+		hitInfo.PropertiesForDefense = _info.PropertiesForDefense;
 		hitInfo.DamageRegular = damageRegular * damageMult;
 		hitInfo.DamageArmor = damageArmor * damageMult;
 		hitInfo.DamageDirect = damageDirect;
