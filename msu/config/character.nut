@@ -1,5 +1,10 @@
 ::Const.Combat.HitChanceMin <- 5;
 ::Const.Combat.HitChanceMax <- 95;
+::Const.Combat.DivertedAttackDamageMult <- 0.75;
+::Const.Combat.DivertedAttackHitchanceAdd <- -15;
+::Const.Combat.AIRangedAttackDiversionChance <- 25;
+::Const.Combat.BeginnerDifficultyHitchanceBonus <- 5;
+::Const.Combat.BeginnerDifficultyDefenseBonus <- 5;
 
 ::Const.ItemActionOrder <- {
 	First = 0,

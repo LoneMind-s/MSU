@@ -450,7 +450,7 @@
 		return ret;
 	}
 
-	function getHitchance( _targetEntity )
+	function getHitchance( _targetEntity, _allowDiversion = null, _attackerProperties = null, _defenderProperties = null )
 	{
 		if (!_targetEntity.isAttackable())
 		{
@@ -458,24 +458,24 @@
 		}
 
 		local user = this.m.Container.getActor();
-		local properties = this.m.Container.buildPropertiesForUse(this, _targetEntity);
+		if (_attackerProperties == null) _attackerProperties = this.m.Container.buildPropertiesForUse(this, _targetEntity);
 
 		if (!this.isUsingHitchance())
 		{
 			return 100;
 		}
 
-		local allowDiversion = this.m.IsRanged && this.m.MaxRangeBonus > 1;
-		local defenderProperties = _targetEntity.getSkills().buildPropertiesForDefense(user, this);
-		local skill = this.m.IsRanged ? properties.getRangedSkill() : properties.getMeleeSkill();
-		local defense = _targetEntity.getDefense(user, this, defenderProperties);
+		if (_allowDiversion == null) _allowDiversion = this.m.IsRanged && this.m.MaxRangeBonus > 1;
+		if (_defenderProperties == null) _defenderProperties = _targetEntity.getSkills().buildPropertiesForDefense(user, this);
+		local skill = this.m.IsRanged ? _attackerProperties.getRangedSkill() : _attackerProperties.getMeleeSkill();
+		local defense = _targetEntity.getDefense(user, this, _defenderProperties);
 		local levelDifference = _targetEntity.getTile().Level - user.getTile().Level;
 		local distanceToTarget = user.getTile().getDistanceTo(_targetEntity.getTile());
 		local toHit = skill - defense;
 
 		if (this.m.IsRanged)
 		{
-			toHit = toHit + (distanceToTarget - this.m.MinRange) * properties.HitChanceAdditionalWithEachTile * properties.HitChanceWithEachTileMult;
+			toHit = toHit + (distanceToTarget - this.m.MinRange) * _attackerProperties.HitChanceAdditionalWithEachTile * _attackerProperties.HitChanceWithEachTileMult;
 		}
 
 		if (levelDifference < 0)
@@ -489,17 +489,17 @@
 
 		toHit += this.getShieldRelevantHitchanceBonus(this, _targetEntity);
 
-		toHit = toHit * properties.TotalAttackToHitMult;
-		toHit = toHit + this.Math.max(0, 100 - toHit) * (1.0 - defenderProperties.TotalDefenseToHitMult);
+		toHit = toHit * _attackerProperties.TotalAttackToHitMult;
+		toHit = toHit + this.Math.max(0, 100 - toHit) * (1.0 - _defenderProperties.TotalDefenseToHitMult);
 		local userTile = user.getTile();
 
-		if (allowDiversion && this.m.IsRanged && userTile.getDistanceTo(_targetEntity.getTile()) > 1)
+		if (_allowDiversion && this.m.IsRanged && userTile.getDistanceTo(_targetEntity.getTile()) > 1)
 		{
-			local blockedTiles = this.Const.Tactical.Common.getBlockedTiles(userTile, _targetEntity.getTile(), user.getFaction(), true);
+			local blockedTiles = ::Const.Tactical.Common.getBlockedTiles(userTile, _targetEntity.getTile(), user.getFaction(), true);
 
 			if (blockedTiles.len() != 0)
 			{
-				local blockChance = ::Const.Combat.RangedAttackBlockedChance * properties.RangedAttackBlockedChanceMult;
+				local blockChance = ::Const.Combat.RangedAttackBlockedChance * _attackerProperties.RangedAttackBlockedChanceMult;
 				toHit = ::Math.floor(toHit * (1.0 - blockChance));
 			}
 		}
@@ -507,7 +507,7 @@
 		return ::Math.max(::Const.Combat.HitChanceMin, ::Math.min(::Const.Combat.HitChanceMax, toHit));
 	}
 
-	function attackEntity( _user, _targetEntity, _allowDiversion = true )
+	function attackEntity( _user, _targetEntity, _allowDiversion = true, _isDiverted = false )
 	{
 		if (_targetEntity != null && !_targetEntity.isAlive())
 		{
@@ -520,11 +520,12 @@
 
 		if (_allowDiversion && this.m.IsRanged && userTile.getDistanceTo(_targetEntity.getTile()) > 1)
 		{
-			local blockedTiles = this.Const.Tactical.Common.getBlockedTiles(userTile, _targetEntity.getTile(), _user.getFaction());
+			local blockedTiles = ::Const.Tactical.Common.getBlockedTiles(userTile, _targetEntity.getTile(), _user.getFaction());
 
 			if (blockedTiles.len() != 0 && this.Math.rand(1, 100) <= this.Math.ceil(this.Const.Combat.RangedAttackBlockedChance * properties.RangedAttackBlockedChanceMult * 100))
 			{
 				_allowDiversion = false;
+				_isDiverted = true;
 				astray = true;
 				_targetEntity = blockedTiles[this.Math.rand(0, blockedTiles.len() - 1)].getEntity();
 			}
@@ -549,60 +550,17 @@
 		local defense = _targetEntity.getDefense(_user, this, defenderProperties);
 		local levelDifference = _targetEntity.getTile().Level - _user.getTile().Level;
 		local distanceToTarget = _user.getTile().getDistanceTo(_targetEntity.getTile());
-		local toHit = 0;
-		local skill = this.m.IsRanged ? properties.RangedSkill * properties.RangedSkillMult : properties.MeleeSkill * properties.MeleeSkillMult;
-		toHit = toHit + skill;
-		toHit = toHit - defense;
+		local toHit = this.getHitchance(_targetEntity, _allowDiversion, properties, defenderProperties);
 
-		if (this.m.IsRanged)
+		if (this.m.IsRanged && _isDiverted && this.m.IsShowingProjectile)
 		{
-			toHit = toHit + (distanceToTarget - this.m.MinRange) * properties.HitChanceAdditionalWithEachTile * properties.HitChanceWithEachTileMult;
-		}
-
-		if (levelDifference < 0)
-		{
-			toHit = toHit + this.Const.Combat.LevelDifferenceToHitBonus;
-		}
-		else
-		{
-			toHit = toHit + this.Const.Combat.LevelDifferenceToHitMalus * levelDifference;
-		}
-
-		local shieldBonus = 0;
-		local shield = _targetEntity.getItems().getItemAtSlot(this.Const.ItemSlot.Offhand);
-
-		if (shield != null && shield.isItemType(this.Const.Items.ItemType.Shield))
-		{
-			shieldBonus = (this.m.IsRanged ? shield.getRangedDefense() : shield.getMeleeDefense()) * (_targetEntity.getCurrentProperties().IsSpecializedInShields ? 1.25 : 1.0);
-
-			if (!this.m.IsShieldRelevant)
-			{
-				toHit = toHit + shieldBonus;
-			}
-
-			if (_targetEntity.getSkills().hasSkill("effects.shieldwall"))
-			{
-				if (!this.m.IsShieldwallRelevant)
-				{
-					toHit = toHit + shieldBonus;
-				}
-
-				shieldBonus = shieldBonus * 2;
-			}
-		}
-
-		toHit = toHit * properties.TotalAttackToHitMult;
-		toHit = toHit + this.Math.max(0, 100 - toHit) * (1.0 - defenderProperties.TotalDefenseToHitMult);
-
-		if (this.m.IsRanged && !_allowDiversion && this.m.IsShowingProjectile)
-		{
-			toHit = toHit - 15;
-			properties.DamageTotalMult *= 0.75;
+			toHit += ::Const.Combat.DivertedAttackHitchanceAdd;
+			properties.DamageTotalMult *= ::Const.Combat.DivertedAttackDamageMult;
 		}
 
 		if (defense > -100 && skill > -100)
 		{
-			toHit = this.Math.max(5, this.Math.min(95, toHit));
+			toHit = this.Math.max(::Const.Combat.HitChanceMin, this.Math.min(::Const.Combat.HitChanceMax, toHit));
 		}
 
 		_targetEntity.onAttacked(_user);
@@ -642,11 +600,11 @@
 		{
 			if (_user.isPlayerControlled())
 			{
-				r = this.Math.max(1, r - 5);
+				r = this.Math.max(1, r - ::Const.Combat.BeginnerDifficultyHitchanceBonus);
 			}
 			else if (_targetEntity.isPlayerControlled())
 			{
-				r = this.Math.min(100, r + 5);
+				r = this.Math.min(100, r + ::Const.Combat.BeginnerDifficultyDefenseBonus);
 			}
 		}
 
@@ -663,11 +621,11 @@
 				{
 					if (isHit)
 					{
-						this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and the shot goes astray and hits " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(95, this.Math.max(5, toHit)) + ", Rolled: " + rolled + ")");
+						this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and the shot goes astray and hits " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(::Const.Combat.HitChanceMax, this.Math.max(::Const.Combat.HitChanceMin, toHit)) + ", Rolled: " + rolled + ")");
 					}
 					else
 					{
-						this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and the shot goes astray and misses " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(95, this.Math.max(5, toHit)) + ", Rolled: " + rolled + ")");
+						this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and the shot goes astray and misses " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(::Const.Combat.HitChanceMax, this.Math.max(::Const.Combat.HitChanceMin, toHit)) + ", Rolled: " + rolled + ")");
 					}
 				}
 				else
@@ -679,11 +637,11 @@
 			{
 				if (isHit)
 				{
-					this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and hits " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(95, this.Math.max(5, toHit)) + ", Rolled: " + rolled + ")");
+					this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and hits " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(::Const.Combat.HitChanceMax, this.Math.max(::Const.Combat.HitChanceMin, toHit)) + ", Rolled: " + rolled + ")");
 				}
 				else
 				{
-					this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and misses " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(95, this.Math.max(5, toHit)) + ", Rolled: " + rolled + ")");
+					this.Tactical.EventLog.logEx(this.Const.UI.getColorizedEntityName(_user) + " uses " + this.getName() + " and misses " + this.Const.UI.getColorizedEntityName(_targetEntity) + " (Chance: " + this.Math.min(::Const.Combat.HitChanceMax, this.Math.max(::Const.Combat.HitChanceMin, toHit)) + ", Rolled: " + rolled + ")");
 				}
 			}
 			else
@@ -748,23 +706,17 @@
 			this.m.Container.onTargetMissed(this, _targetEntity);
 			local prohibitDiversion = false;
 
-			if (_allowDiversion && this.m.IsRanged && !_user.isPlayerControlled() && this.Math.rand(1, 100) <= 25 && distanceToTarget > 2)
+			if (_allowDiversion && this.m.IsRanged && !_user.isPlayerControlled() && this.Math.rand(1, 100) <= ::Const.Combat.AIRangedAttackDiversionChance && distanceToTarget > 2)
 			{
 				local targetTile = _targetEntity.getTile();
 
-				for( local i = 0; i < this.Const.Direction.COUNT; i = ++i )
+				for (local i = 0; i < this.Const.Direction.COUNT; i++)
 				{
-					if (!targetTile.hasNextTile(i))
-					{
-					}
-					else
+					if (targetTile.hasNextTile(i))
 					{
 						local tile = targetTile.getNextTile(i);
 
-						if (tile.IsEmpty)
-						{
-						}
-						else if (tile.IsOccupiedByActor && tile.getEntity().isAlliedWith(_user))
+						if (!tile.IsEmpty && tile.IsOccupiedByActor && tile.getEntity().isAlliedWith(_user))
 						{
 							prohibitDiversion = true;
 							break;
