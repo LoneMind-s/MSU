@@ -1,11 +1,13 @@
 ::MSU.Class.TooltipsSystem <- class extends ::MSU.Class.System
 {
 	Mods = null;
+	ImageKeywordMap = null;
 
 	constructor()
 	{
 		base.constructor(::MSU.SystemID.Tooltips);
 		this.Mods = {};
+		this.ImageKeywordMap = {};
 	}
 
 	function registerMod( _mod )
@@ -13,6 +15,7 @@
 		base.registerMod(_mod);
 		_mod.Tooltips = ::MSU.Class.TooltipsModAddon(_mod);
 		this.Mods[_mod.getID()] <- {};
+		this.ImageKeywordMap[_mod.getID()] <- {};
 	}
 
 	function setTooltips( _modID, _tooltipTable )
@@ -34,6 +37,22 @@
 				_currentTable[key] <- value;
 			}
 		}
+	}
+
+	function setTooltipImageKeywords(_modID, _tooltipTable)
+	{
+		local identifier, path;
+		foreach (imagePath, id in _tooltipTable)
+		{
+			imagePath = "coui://gfx/" + imagePath;
+			identifier = {mod = _modID, id = id};
+			this.ImageKeywordMap[imagePath] <- identifier;
+		}
+	}
+
+	function passTooltipIdentifiers()
+	{
+		::MSU.UI.JSConnection.passTooltipIdentifiers(this.ImageKeywordMap);
 	}
 
 	function getTooltip( _modID, _identifier )

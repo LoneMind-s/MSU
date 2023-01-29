@@ -3,6 +3,7 @@ MSU.NestedTooltip = {
 	__tooltipStack : [],
 	__tooltipHideDelay : 200,
 	__tooltipShowDelay : 200,
+	KeyImgMap : {},
 	bindToElement : function (_element, _data)
 	{
 		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_data));
@@ -153,33 +154,18 @@ MSU.NestedTooltip = {
 			return self.getTooltipLinkHTML(_mod, _id, _text);
 		})
 	},
-	getImageTooltipData : function (_imagePath)
-	{
-		var self = this;
-		var html;
-		var parsedPath = _imagePath.replace(this.__regexp, function (_match, _mod, _id, _text)
-		{
-			html = self.getTooltipLinkHTML(_mod, _id);
-			return _text;
-		})
-		return {
-			imagePath : parsedPath,
-			imageTooltip : html
-		};
-	},
 	parseImgPaths : function (_jqueryObj)
 	{
 		var self = this;
 		_jqueryObj.find('img').each(function ()
 		{
-			var tooltipData = self.getImageTooltipData(this.src);
-			if (tooltipData.imageTooltip != undefined)
+			if (this.src in self.KeyImgMap)
 			{
+				var entry = self.KeyImgMap[this.src];
 				var img = $(this);
-				var div = $(tooltipData.imageTooltip)
+				var div = $(self.getTooltipLinkHTML(entry.mod, entry.id));
 				img.after(div);
 				div.append(img.detach());
-				this.src = tooltipData.imagePath;
 			}
 		})
 	}
@@ -196,6 +182,7 @@ XBBCODE.process = function (config)
 	ret.html = MSU.NestedTooltip.parseText(ret.html)
 	return ret;
 }
+
 
 $.fn.bindTooltip = function (_data)
 {

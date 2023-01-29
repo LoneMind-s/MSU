@@ -35,3 +35,9 @@
 		}
 	}
 });
+::MSU.Mod.Tooltips.setTooltipImageKeywords({
+	"ui/icons/melee_skill.png" 		: "Attributes.Matk"
+	"ui/icons/melee_defense.png" 	: "Attributes.Mdef"
+	"ui/icons/ranged_skill.png" 	: "Attributes.Ratk"
+	"ui/icons/ranged_defense.png" 	: "Attributes.Rdef"
+})
