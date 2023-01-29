@@ -1,4 +1,14 @@
+local function queryVanillaTooltip(_id)
+{
+	return ::TooltipEvents.general_queryUIElementTooltipData(null, _id, null)
+}
 ::MSU.Mod.Tooltips.setTooltips({
+	Attributes = {
+		Matk = ::MSU.Class.CustomTooltip(@(_) queryVanillaTooltip("character-stats.MeleeSkill")),
+		Mdef = ::MSU.Class.CustomTooltip(@(_) queryVanillaTooltip("character-stats.MeleeDefense")),
+		Ratk = ::MSU.Class.CustomTooltip(@(_) queryVanillaTooltip("character-stats.RangeSkill")),
+		Rdef = ::MSU.Class.CustomTooltip(@(_) queryVanillaTooltip("character-stats.RangeDefense")),
+	},
 	ModSettings = {
 		Main = {
 			Cancel = ::MSU.Class.BasicTooltip("Cancel", "Don't save changes."),
