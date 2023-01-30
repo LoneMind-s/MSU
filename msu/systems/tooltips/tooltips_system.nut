@@ -61,8 +61,20 @@
 		local currentTable = this.Mods[_modID];
 		for (local i = 0; i < fullKey.len(); ++i)
 		{
+			local currentKey = fullKey[i];
+			if (currentKey in currentTable && currentTable[currentKey] instanceof ::MSU.Class.Tooltip)
+			{
+				local data = fullKey.slice(i+1).reduce( @(_a, _b) _a + "." + _b);
+				return {
+					Tooltip = currentTable[currentKey],
+					Data = data
+				}
+			}
 			currentTable = currentTable[fullKey[i]];
 		}
-		return currentTable;
+		return {
+			Tooltip = currentTable,
+			Data = null
+		}
 	}
 }
