@@ -85,8 +85,8 @@ MSUConnection.prototype.notifyBackendReceivedModVersions = function (_modVersion
 
 MSUConnection.prototype.setTooltipImageKeywords = function (_table)
 {
-	$.each(_table, function(_key, value){
-		MSU.NestedTooltip.KeyImgMap[_key] = value
+	$.each(_table, function(_key, _value){
+		MSU.NestedTooltip.KeyImgMap[_key] = _value;
 	})
 }
 
