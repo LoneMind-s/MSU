@@ -15,7 +15,6 @@
 		base.registerMod(_mod);
 		_mod.Tooltips = ::MSU.Class.TooltipsModAddon(_mod);
 		this.Mods[_mod.getID()] <- {};
-		this.ImageKeywordMap[_mod.getID()] <- {};
 	}
 
 	function setTooltips( _modID, _tooltipTable )
