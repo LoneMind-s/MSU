@@ -107,7 +107,7 @@ MSU.NestedTooltip = {
 		container.on('mouseenter.msu-tooltip-tooltip', function (_event)
 		{
 			var data = $(this).data('msu-nested');
-			data.isHovered = true;
+			data.isHovered = $(this).find(".msu-nested-tooltip").length > 0;
 			if (data.timeout !== null)
 			{
 				clearTimeout(data.timeout);
