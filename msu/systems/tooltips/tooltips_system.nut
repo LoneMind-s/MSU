@@ -44,6 +44,11 @@
 		foreach (imagePath, id in _tooltipTable)
 		{
 			imagePath = "coui://gfx/" + imagePath;
+			if (imagePath in this.ImageKeywordMap)
+			{
+				::logError(format("ImagePath %s already set by mod %s with tooltipID %s! Skipping this image keyword.", imagePath, _modID, id));
+				continue;
+			}
 			identifier = {mod = _modID, id = id};
 			this.ImageKeywordMap[imagePath] <- identifier;
 		}
