@@ -74,7 +74,7 @@
 					Data = data
 				}
 			}
-			currentTable = currentTable[fullKey[i]];
+			currentTable = currentTable[currentKey];
 		}
 		return {
 			Tooltip = currentTable,
