@@ -6,6 +6,30 @@
 	color: #1A1A1A;
 	text-decoration: underline;
 }
+.msu-nested-tooltips-within
+{
+	border-top: 3px solid #AC7327;
+	border-left: 3px solid #AC7327;
+}
+.msu-nested-tooltips-locked
+{
+	border-right: 3px solid #AC7327;
+	border-bottom: 3px solid #AC7327;
+}
+.msu-nested-tooltip-not-hovered
+{
+	-webkit-filter: brightness(50%);
+}
+.tooltip-progress-bar
+{
+	position: absolute;
+	background-image: url(coui://gfx/ui/icons/action_points.png);
+	right: 0.7rem;
+	top: 0.7rem;
+	width: 3rem;
+	height: 3rem;
+}
+
 .line
 {
 	outline: 2px solid white;

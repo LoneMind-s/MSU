@@ -86,43 +86,91 @@ MSU.NestedTooltip = {
 	},
 	createTooltip : function (_data, _sourceElement, _contentType)
 	{
-		var container = this.getTooltipFromData(_data, _contentType);
+		var tooltipContainer = this.getTooltipFromData(_data, _contentType);
+		var nestedItems = tooltipContainer.find(".msu-nested-tooltip");
+		if (nestedItems.length > 0)
+		{
+			tooltipContainer.addClass("msu-nested-tooltips-within");
+			var progressImage = $("<div class='tooltip-progress-bar'/>")
+				.appendTo(tooltipContainer)
+
+			progressImage.velocity({ opacity: 0 },
+			{
+		        duration: 1000,
+				begin: function()
+				{
+					progressImage.css("opacity", 1)
+		        },
+				complete: function()
+				{
+					tooltipContainer.find(".progressImage").remove();
+					tooltipData.isLocked = true;
+					tooltipContainer.addClass("msu-nested-tooltips-locked");
+					setTimeout(function()
+					{
+						tooltipContainer.removeClass("msu-nested-tooltips-locked");
+					}, 100)
+		        }
+		   });
+		}
+
 		var self = this;
 		var sourceData = {
 			container : _sourceElement,
 			timeout : null,
-			isHovered : true
+			isHovered : true,
 		};
 		_sourceElement.data('msu-nested', sourceData);
 		var tooltipData = {
-			container : container,
+			container : tooltipContainer,
 			timeout : null,
-			isHovered : false
+			opacityTimeout : null,
+			isHovered : false,
+			isLocked : false
 		};
-		container.data('msu-nested', tooltipData);
+		tooltipContainer.data('msu-nested', tooltipData);
 		this.__tooltipStack.push({
 			source : sourceData,
 			tooltip : tooltipData
 		});
-		container.on('mouseenter.msu-tooltip-tooltip', function (_event)
+		tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
 		{
+			var data = $(this).data('msu-nested')
+			if (!data.isLocked)
+			{
+				$(this).hide();
+				return
+			}
+			$(this).removeClass("msu-nested-tooltip-not-hovered");
 			var data = $(this).data('msu-nested');
 			data.isHovered = $(this).find(".msu-nested-tooltip").length > 0;
+			if (!data.isHovered)
+			{
+				$(this).hide();
+			}
 			if (data.timeout !== null)
 			{
 				clearTimeout(data.timeout);
 				data.timeout = null;
 			}
+			if( data.opacityTimeout !== null)
+			{
+				clearTimeout(data.opacityTimeout);
+				data.opacityTimeout = null;
+			}
 		});
-		container.on('mouseleave.msu-tooltip-tooltip', function (_event)
+		tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
 		{
 			var data = $(this).data('msu-nested');
 			data.isHovered = false;
+			data.opacityTimeout = setTimeout(function(){
+				$(tooltipContainer).addClass("msu-nested-tooltip-not-hovered");
+			}, self.__tooltipHideDelay);
 			data.timeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 
-		$('body').append(container)
-		this.positionTooltip(container, _data, _sourceElement);
+		$('body').append(tooltipContainer)
+		this.positionTooltip(tooltipContainer, _data, _sourceElement);
 	},
 	getTooltipFromData : function (_data, _contentType)
 	{
