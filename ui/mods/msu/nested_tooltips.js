@@ -86,35 +86,9 @@ MSU.NestedTooltip = {
 	},
 	createTooltip : function (_data, _sourceElement, _contentType)
 	{
-		var tooltipContainer = this.getTooltipFromData(_data, _contentType);
-		var nestedItems = tooltipContainer.find(".msu-nested-tooltip");
-		if (nestedItems.length > 0)
-		{
-			tooltipContainer.addClass("msu-nested-tooltips-within");
-			var progressImage = $("<div class='tooltip-progress-bar'/>")
-				.appendTo(tooltipContainer)
-
-			progressImage.velocity({ opacity: 0 },
-			{
-		        duration: 1000,
-				begin: function()
-				{
-					progressImage.css("opacity", 1)
-		        },
-				complete: function()
-				{
-					tooltipContainer.find(".progressImage").remove();
-					tooltipData.isLocked = true;
-					tooltipContainer.addClass("msu-nested-tooltips-locked");
-					setTimeout(function()
-					{
-						tooltipContainer.removeClass("msu-nested-tooltips-locked");
-					}, 100)
-		        }
-		   });
-		}
-
 		var self = this;
+		var tooltipContainer = this.getTooltipFromData(_data, _contentType);
+		this.addTooltipLockHandler(tooltipContainer)
 		var sourceData = {
 			container : _sourceElement,
 			updateStackTimeout : null,
@@ -172,6 +146,35 @@ MSU.NestedTooltip = {
 		$('body').append(tooltipContainer)
 		this.positionTooltip(tooltipContainer, _data, _sourceElement);
 	},
+	addTooltipLockHandler : function(_tooltipContainer)
+	{
+		var nestedItems = _tooltipContainer.find(".msu-nested-tooltip");
+		if (nestedItems.length > 0)
+		{
+			_tooltipContainer.addClass("msu-nested-tooltips-within");
+			var progressImage = $("<div class='tooltip-progress-bar'/>")
+				.appendTo(_tooltipContainer)
+
+			progressImage.velocity({ opacity: 0 },
+			{
+		        duration: 1000,
+				begin: function()
+				{
+					progressImage.css("opacity", 1)
+		        },
+				complete: function()
+				{
+					progressImage.remove();
+					_tooltipContainer.data('msu-nested').isLocked = true;
+					_tooltipContainer.addClass("msu-nested-tooltips-locked");
+					setTimeout(function()
+					{
+						_tooltipContainer.removeClass("msu-nested-tooltips-locked");
+					}, 100)
+		        }
+		   });
+		}
+	}
 	getTooltipFromData : function (_data, _contentType)
 	{
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
