@@ -22,46 +22,50 @@ MSU.NestedTooltip = {
 	{
 		return function (_event)
 		{
-			var element = $(this);
-			if (element.data('msu-nested') !== undefined) return;
 			var self = MSU.NestedTooltip;
-			var createTooltipTimeout = setTimeout(function() {
-				element.off('.msu-tooltip-loading');
-				self.updateStack();
-				Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_data, function (_backendData)
-				{
-					self.createTooltip(_backendData, element, _data.contentType);
-				});
-				element.on('mouseenter.msu-tooltip-showing', function(_event)
-				{
-					var data = $(this).data('msu-nested');
-					data.isHovered = true;
-					if (data.updateStackTimeout !== null)
-					{
-						clearTimeout(data.updateStackTimeout);
-						data.updateStackTimeout = null;
-					}
-				});
-				element.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
-				{
-					var data = $(this).data('msu-nested');
-					if (data === undefined) // not sure when this comes up, but sometimes it does, and the game errors unless we do this
-					{
-						self.updateStack();
-						return;
-					}
-					data.isHovered = false;
-					data.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
-				});
+			var tooltipSource = $(this);
+			if (tooltipSource.data('msu-nested') !== undefined) return;
+			var createTooltipTimeout = setTimeout(function(){
+				self.onShowTooltipTimerExpired(tooltipSource, _data);
 			}, self.__tooltipShowDelay);
 
-			element.on('mouseleave.msu-tooltip-loading', function (_event)
+			tooltipSource.on('mouseleave.msu-tooltip-loading', function (_event)
 			{
 				clearTimeout(createTooltipTimeout);
-				element.off('mouseleave.msu-tooltip-loading');
+				tooltipSource.off('mouseleave.msu-tooltip-loading');
 			})
 
 		}
+	},
+	onShowTooltipTimerExpired : function(_tooltipSource, _data)
+	{
+		var self = this;
+		_tooltipSource.off('.msu-tooltip-loading');
+		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_data, function (_backendData)
+		{
+			self.createTooltip(_backendData, _tooltipSource, _data.contentType);
+			_tooltipSource.on('mouseenter.msu-tooltip-showing', function(_event)
+			{
+				var data = $(this).data('msu-nested');
+				data.isHovered = true;
+				if (data.updateStackTimeout !== null)
+				{
+					clearTimeout(data.updateStackTimeout);
+					data.updateStackTimeout = null;
+				}
+			});
+			_tooltipSource.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
+			{
+				var data = $(this).data('msu-nested');
+				if (data === undefined) // not sure when this comes up, but sometimes it does, and the game errors unless we do this
+				{
+					self.updateStack();
+					return;
+				}
+				data.isHovered = false;
+				data.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			});
+		});
 	},
 	updateStack : function ()
 	{
@@ -75,106 +79,119 @@ MSU.NestedTooltip = {
 	},
 	removeTooltip : function (_pairData, _idx)
 	{
-		if (_pairData.source.updateStackTimeout !== null)
-			clearTimeout(_pairData.source.updateStackTimeout);
+		this.cleanSourceContainer(_pairData.source.container);
 		if (_pairData.tooltip.updateStackTimeout !== null)
 			clearTimeout(_pairData.tooltip.updateStackTimeout);
-		_pairData.source.container.off('.msu-tooltip-showing');
-		_pairData.source.container.removeData('msu-nested');
 		_pairData.tooltip.container.remove();
 		this.__tooltipStack.splice(_idx, 1);
 	},
-	createTooltip : function (_data, _sourceElement, _contentType)
+	cleanSourceContainer : function(_sourceContainer)
+	{
+		_sourceContainer.off('.msu-tooltip-showing');
+		var data = _sourceContainer.data("msu-nested");
+		if (data === undefined)
+			return;
+		if (data.updateStackTimeout !== null)
+			clearTimeout(data.updateStackTimeout);
+		_sourceContainer.removeData('msu-nested');
+	},
+	createTooltip : function (_data, _sourceContainer, _contentType)
 	{
 		var self = this;
 		var tooltipContainer = this.getTooltipFromData(_data, _contentType);
-		this.addTooltipLockHandler(tooltipContainer)
 		var sourceData = {
-			container : _sourceElement,
+			container : _sourceContainer,
 			updateStackTimeout : null,
 			isHovered : true,
+			tooltipContainer : tooltipContainer
 		};
-		_sourceElement.data('msu-nested', sourceData);
+		_sourceContainer.data('msu-nested', sourceData);
 		var tooltipData = {
 			container : tooltipContainer,
 			updateStackTimeout : null,
 			opacityTimeout : null,
 			isHovered : false,
-			isLocked : false
+			isLocked : false,
+			sourceContainer : _sourceContainer
 		};
 		tooltipContainer.data('msu-nested', tooltipData);
 		this.__tooltipStack.push({
 			source : sourceData,
 			tooltip : tooltipData
 		});
+		this.addTooltipLockHandler(tooltipContainer, _sourceContainer);
 		tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
 		{
-			var data = $(this).data('msu-nested')
-			if (!data.isLocked)
+			if (!tooltipData.isLocked)
 			{
 				$(this).hide();
-				return
+				self.cleanSourceContainer(_sourceContainer);
+				return;
 			}
 			$(this).removeClass("msu-nested-tooltip-not-hovered");
-			var data = $(this).data('msu-nested');
-			data.isHovered = $(this).find(".msu-nested-tooltip").length > 0;
-			if (!data.isHovered)
+			tooltipData.isHovered = true;
+			if (tooltipData.updateStackTimeout !== null)
 			{
-				$(this).hide();
+				clearTimeout(tooltipData.updateStackTimeout);
+				tooltipData.updateStackTimeout = null;
 			}
-			if (data.updateStackTimeout !== null)
+			if( tooltipData.opacityTimeout !== null)
 			{
-				clearTimeout(data.updateStackTimeout);
-				data.updateStackTimeout = null;
-			}
-			if( data.opacityTimeout !== null)
-			{
-				clearTimeout(data.opacityTimeout);
-				data.opacityTimeout = null;
+				clearTimeout(tooltipData.opacityTimeout);
+				tooltipData.opacityTimeout = null;
 			}
 		});
 		tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
 		{
-			var data = $(this).data('msu-nested');
-			data.isHovered = false;
-			data.opacityTimeout = setTimeout(function(){
+			tooltipData.isHovered = false;
+			tooltipData.opacityTimeout = setTimeout(function(){
 				$(tooltipContainer).addClass("msu-nested-tooltip-not-hovered");
 			}, self.__tooltipHideDelay);
-			data.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 
 		$('body').append(tooltipContainer)
-		this.positionTooltip(tooltipContainer, _data, _sourceElement);
+		this.positionTooltip(tooltipContainer, _data, _sourceContainer);
 	},
-	addTooltipLockHandler : function(_tooltipContainer)
+	addTooltipLockHandler : function(_tooltipContainer, _sourceContainer)
 	{
 		var nestedItems = _tooltipContainer.find(".msu-nested-tooltip");
-		if (nestedItems.length > 0)
-		{
-			_tooltipContainer.addClass("msu-nested-tooltips-within");
-			var progressImage = $("<div class='tooltip-progress-bar'/>")
-				.appendTo(_tooltipContainer)
+		if (nestedItems.length == 0)
+			return;
+		var self = this;
 
-			progressImage.velocity({ opacity: 0 },
+		_tooltipContainer.addClass("msu-nested-tooltips-within");
+		var progressImage = $("<div class='tooltip-progress-bar'/>")
+			.appendTo(_tooltipContainer)
+
+		progressImage.velocity({ opacity: 0 },
+		{
+	        duration: 1000,
+			begin: function()
 			{
-		        duration: 1000,
-				begin: function()
+				progressImage.css("opacity", 1)
+	        },
+			complete: function()
+			{
+				progressImage.remove();
+				var data = _tooltipContainer.data('msu-nested');
+				if (data === undefined)
 				{
-					progressImage.css("opacity", 1)
-		        },
-				complete: function()
+					return;
+				}
+				data.isLocked = true;
+				_tooltipContainer.addClass("msu-nested-tooltips-locked");
+				setTimeout(function()
 				{
-					progressImage.remove();
-					_tooltipContainer.data('msu-nested').isLocked = true;
-					_tooltipContainer.addClass("msu-nested-tooltips-locked");
-					setTimeout(function()
-					{
-						_tooltipContainer.removeClass("msu-nested-tooltips-locked");
-					}, 100)
-		        }
-		   });
-		}
-	}
+					_tooltipContainer.removeClass("msu-nested-tooltips-locked");
+				}, 100)
+	        }
+	   });
+
+		_sourceContainer.mousedown(function(){
+			progressImage.velocity("finish");
+		})
+	},
 	getTooltipFromData : function (_data, _contentType)
 	{
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
