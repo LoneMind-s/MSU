@@ -189,7 +189,11 @@ MSU.NestedTooltip = {
 	   });
 
 		_sourceContainer.mousedown(function(){
-			progressImage.velocity("finish");
+			if (MSU.Keybinds.isMousebindPressed(MSU.ID, "LockTooltip"))
+			{
+				progressImage.velocity("finish");
+			}
+
 		})
 	},
 	getTooltipFromData : function (_data, _contentType)
