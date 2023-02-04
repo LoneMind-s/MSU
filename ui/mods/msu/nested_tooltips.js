@@ -87,7 +87,7 @@ MSU.NestedTooltip = {
 		for (var i = this.__tooltipStack.length - 1; i >= 0; i--)
 		{
 			var pairData = this.__tooltipStack[i];
-			if (pairData.source.isHovered || pairData.tooltip.isHovered)
+			if ((pairData.source.isHovered && pairData.source.container.is(":visible")) || (pairData.tooltip.isHovered && pairData.tooltip.container.is(":visible")))
 				return false;
 			this.removeTooltip(pairData, i);
 		}
