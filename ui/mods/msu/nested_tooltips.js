@@ -1,5 +1,18 @@
-var tileTooltipDiv = $("<div class='msu-tile-div'/>")
-	.appendTo($(document.body));
+var tileTooltipDiv = {
+	container : $("<div class='msu-tile-div'/>"),
+	expand : function(_newPosition)
+	{
+		this.container.show();
+		this.container.offset(_newPosition);
+	},
+	shrink : function()
+	{
+		// this.container.css({width: "0", height: "0"})
+		this.container.hide();
+		this.container.trigger('mouseleave.msu-tooltip-showing');
+	}
+}
+tileTooltipDiv.container.appendTo($(document.body));
 MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.([\w\.]+)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
@@ -281,19 +294,21 @@ $(document).on('mouseenter.msu-tooltip-source', '.msu-nested-tooltip', function(
 
 TooltipModule.prototype.showTileTooltip = function()
 {
+	// increase range so it's less jittery
+	this.mMinMouseMovement = 20;
 	if (this.mCurrentData === undefined || this.mCurrentData === null)
 	{
 		return;
 	}
 	console.error("Current data: " + JSON.stringify(this.mCurrentData))
-	tileTooltipDiv.offset({top: this.mLastMouseY, left:this.mLastMouseX});
+	tileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
 	if (MSU.NestedTooltip.updateStack())
-		MSU.NestedTooltip.onShowTooltipTimerExpired(tileTooltipDiv, this.mCurrentData);
+		MSU.NestedTooltip.onShowTooltipTimerExpired(tileTooltipDiv.container, this.mCurrentData);
 };
 
 var bla_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
 TooltipModule.prototype.hideTileTooltip = function()
 {
-	tileTooltipDiv.trigger('mouseleave.msu-tooltip-showing');
+	tileTooltipDiv.shrink();
 	bla_hideTileTooltip.call(this);
 };
