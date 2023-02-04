@@ -1,23 +1,22 @@
-var tileTooltipDiv = {
-	container : $("<div class='msu-tile-div'/>"),
-	expand : function(_newPosition)
-	{
-		this.container.show();
-		this.container.offset(_newPosition);
-	},
-	shrink : function()
-	{
-		// this.container.css({width: "0", height: "0"})
-		this.container.hide();
-		this.container.trigger('mouseleave.msu-tooltip-showing');
-	}
-}
-tileTooltipDiv.container.appendTo($(document.body));
 MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.([\w\.]+)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
 	__tooltipHideDelay : 200,
 	__tooltipShowDelay : 200,
+	TileTooltipDiv : {
+		container : $("<div class='msu-tile-div'/>"),
+		expand : function(_newPosition)
+		{
+			this.container.show();
+			this.container.offset(_newPosition);
+		},
+		shrink : function()
+		{
+			// this.container.css({width: "0", height: "0"})
+			this.container.hide();
+			this.container.trigger('mouseleave.msu-tooltip-showing');
+		}
+	},
 	KeyImgMap : {},
 	bindToElement : function (_element, _data)
 	{
@@ -60,7 +59,7 @@ MSU.NestedTooltip = {
 		{
 			if (_backendData === undefined || _backendData === null)
 		    {
-		    	tileTooltipDiv.shrink();
+		    	self.TileTooltipDiv.shrink();
 		        return;
 		    }
 		    // vanilla behavior, when sth moved into tile
@@ -267,6 +266,7 @@ MSU.NestedTooltip = {
 		})
 	}
 }
+MSU.NestedTooltip.TileTooltipDiv.container.appendTo($(document.body));
 MSU.XBBCODE_process = XBBCODE.process;
 // I hate this but the XBBCODE plugin doesn't allow dynamically adding tags
 // there's a fork that does here https://github.com/patorjk/Extendible-BBCode-Parser
@@ -310,14 +310,14 @@ TooltipModule.prototype.showTileTooltip = function()
 		return;
 	}
 	console.error("Current data: " + JSON.stringify(this.mCurrentData))
-	tileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
+	MSU.NestedTooltip.TileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
 	if (MSU.NestedTooltip.updateStack())
-		MSU.NestedTooltip.onShowTooltipTimerExpired(tileTooltipDiv.container, this.mCurrentData);
+		MSU.NestedTooltip.onShowTooltipTimerExpired(MSU.NestedTooltip.TileTooltipDiv.container, this.mCurrentData);
 };
 
-var bla_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
+MSU.TooltipModule_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
 TooltipModule.prototype.hideTileTooltip = function()
 {
-	tileTooltipDiv.shrink();
-	bla_hideTileTooltip.call(this);
+	MSU.NestedTooltip.TileTooltipDiv.shrink();
+	MSU.TooltipModule_hideTileTooltip.call(this);
 };
