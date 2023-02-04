@@ -58,6 +58,15 @@ MSU.NestedTooltip = {
 		_tooltipSource.off('.msu-tooltip-loading');
 		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_data, function (_backendData)
 		{
+			if (_backendData === undefined || _backendData === null)
+		    {
+		    	tileTooltipDiv.shrink();
+		        return;
+		    }
+		    // vanilla behavior, when sth moved into tile
+		    if (_data.contentType === 'tile' || _data.contentType === 'tile-entity')
+		    	Screens.TooltipScreen.mTooltipModule.updateContentType(_backendData)
+
 			self.createTooltip(_backendData, _tooltipSource, _data.contentType);
 			_tooltipSource.on('mouseenter.msu-tooltip-showing', function(_event)
 			{
