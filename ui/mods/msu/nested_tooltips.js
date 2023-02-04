@@ -309,7 +309,6 @@ TooltipModule.prototype.showTileTooltip = function()
 	{
 		return;
 	}
-	console.error("Current data: " + JSON.stringify(this.mCurrentData))
 	MSU.NestedTooltip.TileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
 	if (MSU.NestedTooltip.updateStack())
 		MSU.NestedTooltip.onShowTooltipTimerExpired(MSU.NestedTooltip.TileTooltipDiv.container, this.mCurrentData);
