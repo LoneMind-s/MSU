@@ -4,7 +4,7 @@ MSU.NestedTooltip = {
 	__tooltipHideDelay : 200,
 	__tooltipShowDelay : 200,
 	TileTooltipDiv : {
-		container : $("<div class='msu-tile-div'/>"),
+		container : $("<div class='msu-tile-div'/>").appendTo($(document.body)),
 		expand : function(_newPosition)
 		{
 			this.container.show();
@@ -266,7 +266,6 @@ MSU.NestedTooltip = {
 		})
 	}
 }
-MSU.NestedTooltip.TileTooltipDiv.container.appendTo($(document.body));
 MSU.XBBCODE_process = XBBCODE.process;
 // I hate this but the XBBCODE plugin doesn't allow dynamically adding tags
 // there's a fork that does here https://github.com/patorjk/Extendible-BBCode-Parser
@@ -279,7 +278,6 @@ XBBCODE.process = function (config)
 	ret.html = MSU.NestedTooltip.parseText(ret.html)
 	return ret;
 }
-
 
 $.fn.bindTooltip = function (_data)
 {
