@@ -18,9 +18,9 @@ MSU.NestedTooltip = {
 		}
 	},
 	KeyImgMap : {},
-	bindToElement : function (_element, _data)
+	bindToElement : function (_element, _tooltipParams)
 	{
-		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_data));
+		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_tooltipParams));
 	},
 	unbindFromElement : function (_element)
 	{
@@ -32,7 +32,7 @@ MSU.NestedTooltip = {
 		}
 		_element.off('.msu-tooltip-source');
 	},
-	getBindFunction : function (_data)
+	getBindFunction : function (_tooltipParams)
 	{
 		return function (_event)
 		{
@@ -40,7 +40,7 @@ MSU.NestedTooltip = {
 			var tooltipSource = $(this);
 			if (tooltipSource.data('msu-nested') !== undefined) return;
 			var createTooltipTimeout = setTimeout(function(){
-				self.onShowTooltipTimerExpired(tooltipSource, _data);
+				self.onShowTooltipTimerExpired(tooltipSource, _tooltipParams);
 			}, self.__tooltipShowDelay);
 
 			tooltipSource.on('mouseleave.msu-tooltip-loading', function (_event)
@@ -51,22 +51,24 @@ MSU.NestedTooltip = {
 
 		}
 	},
-	onShowTooltipTimerExpired : function(_tooltipSource, _data)
+	onShowTooltipTimerExpired : function(_tooltipSource, _tooltipParams)
 	{
 		var self = this;
 		_tooltipSource.off('.msu-tooltip-loading');
 		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_data, function (_backendData)
+		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_tooltipParams, function (_backendData)
 		{
 			if (_backendData === undefined || _backendData === null)
 		    {
 		    	self.TileTooltipDiv.shrink();
 		        return;
 		    }
-		    // vanilla behavior, when sth moved into tile
-		    if (_data.contentType === 'tile' || _data.contentType === 'tile-entity')
+
+		    // vanilla behavior, when sth moved into tile while the data was being fetched
+		    if (_tooltipParams.contentType === 'tile' || _tooltipParams.contentType === 'tile-entity')
 		    	Screens.TooltipScreen.mTooltipModule.updateContentType(_backendData)
 
-			self.createTooltip(_backendData, _tooltipSource, _data.contentType);
+			self.createTooltip(_backendData, _tooltipSource, _tooltipParams);
 			_tooltipSource.on('mouseenter.msu-tooltip-showing', function(_event)
 			{
 				var data = $(this).data('msu-nested');
@@ -119,10 +121,10 @@ MSU.NestedTooltip = {
 			clearTimeout(data.updateStackTimeout);
 		_sourceContainer.removeData('msu-nested');
 	},
-	createTooltip : function (_data, _sourceContainer, _contentType)
+	createTooltip : function (_backendData, _sourceContainer, _tooltipParams)
 	{
 		var self = this;
-		var tooltipContainer = this.getTooltipFromData(_data, _contentType);
+		var tooltipContainer = this.getTooltipFromData(_backendData, _tooltipParams.contentType);
 		var sourceData = {
 			container : _sourceContainer,
 			updateStackTimeout : null,
@@ -175,7 +177,7 @@ MSU.NestedTooltip = {
 		});
 
 		$('body').append(tooltipContainer)
-		this.positionTooltip(tooltipContainer, _data, _sourceContainer);
+		this.positionTooltip(tooltipContainer, _backendData, _sourceContainer);
 	},
 	addTooltipLockHandler : function(_tooltipContainer, _sourceContainer)
 	{
@@ -220,21 +222,21 @@ MSU.NestedTooltip = {
 
 		})
 	},
-	getTooltipFromData : function (_data, _contentType)
+	getTooltipFromData : function (_backendData, _contentType)
 	{
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
 		var ret = $('<div class="tooltip-module ui-control-tooltip-module"/>');
 		Screens.TooltipScreen.mTooltipModule.mContainer = ret;
-		Screens.TooltipScreen.mTooltipModule.buildFromData(_data, false, _contentType);
+		Screens.TooltipScreen.mTooltipModule.buildFromData(_backendData, false, _contentType);
 		this.parseImgPaths(ret);
 		Screens.TooltipScreen.mTooltipModule.mContainer = tempContainer;
 		return ret;
 	},
-	positionTooltip : function (_tooltip, _data, _targetDIV)
+	positionTooltip : function (_tooltip, _backendData, _targetDIV)
 	{
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
 		Screens.TooltipScreen.mTooltipModule.mContainer = _tooltip;
-		Screens.TooltipScreen.mTooltipModule.setupUITooltip(_targetDIV, _data);
+		Screens.TooltipScreen.mTooltipModule.setupUITooltip(_targetDIV, _backendData);
 		Screens.TooltipScreen.mTooltipModule.mContainer = tempContainer;
 	},
 	getTooltipLinkHTML : function (_mod, _id, _text)
