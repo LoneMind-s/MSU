@@ -59,7 +59,13 @@ MSU.NestedTooltip = {
 		_tooltipParams = JSON.parse(JSON.stringify(_tooltipParams));
 		// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
 		if (this.__tooltipStack.length > 0)
-			_tooltipParams.entityId = this.__tooltipStack[0].tooltip.entityId;
+		{
+			$.each(this.__tooltipStack[0].dataToPass, function(_key, _value)
+			{
+				_tooltipParams[_key] = _value;
+			})
+		}
+
 		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_tooltipParams, function (_backendData)
 		{
 			if (_backendData === undefined || _backendData === null)
@@ -121,44 +127,29 @@ MSU.NestedTooltip = {
 			opacityTimeout : null,
 			isHovered : false,
 			isLocked : false,
-			sourceContainer : _sourceContainer,
-			entityId : _tooltipParams.entityId || null
+			sourceContainer : _sourceContainer
 		};
 
 		tooltipContainer.data('msu-nested', tooltipData);
-		this.__tooltipStack.push({
+		var stackData = {
 			source : sourceData,
 			tooltip : tooltipData
-		});
-		tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
+		}
+
+		// Add data that we'll want to pass to any nested tooltips, such as entityId
+		if (this.__tooltipStack.length == 0)
 		{
-			if (!tooltipData.isLocked)
+			var dataToPass = {};
+			$.each(_tooltipParams, function(_key, _value)
 			{
-				$(this).hide();
-				self.cleanSourceContainer(_sourceContainer);
-				return;
-			}
-			$(this).removeClass("msu-nested-tooltip-not-hovered");
-			tooltipData.isHovered = true;
-			if (tooltipData.updateStackTimeout !== null)
-			{
-				clearTimeout(tooltipData.updateStackTimeout);
-				tooltipData.updateStackTimeout = null;
-			}
-			if( tooltipData.opacityTimeout !== null)
-			{
-				clearTimeout(tooltipData.opacityTimeout);
-				tooltipData.opacityTimeout = null;
-			}
-		});
-		tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
-		{
-			tooltipData.isHovered = false;
-			tooltipData.opacityTimeout = setTimeout(function(){
-				$(tooltipContainer).addClass("msu-nested-tooltip-not-hovered");
-			}, self.__tooltipHideDelay);
-			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
-		});
+				if (_key === "contentType" || _key === "elementId")
+					return;
+				dataToPass[_key] = _value;
+			})
+			stackData.dataToPass = dataToPass;
+		}
+		this.__tooltipStack.push(stackData);
+
 		this.addTooltipLockHandler(tooltipContainer, _sourceContainer);
 
 		this.addSourceContainerMouseHandler(_sourceContainer);
