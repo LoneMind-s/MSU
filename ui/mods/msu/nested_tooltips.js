@@ -51,10 +51,10 @@ MSU.NestedTooltip = {
 
 		}
 	},
-	onShowTooltipTimerExpired : function(_tooltipSource, _tooltipParams)
+	onShowTooltipTimerExpired : function(_sourceContainer, _tooltipParams)
 	{
 		var self = this;
-		_tooltipSource.off('.msu-tooltip-loading');
+		_sourceContainer.off('.msu-tooltip-loading');
 		// ghetto clone to get new ref
 		_tooltipParams = JSON.parse(JSON.stringify(_tooltipParams));
 		// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
