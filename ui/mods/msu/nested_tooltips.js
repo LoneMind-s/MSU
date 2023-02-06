@@ -279,6 +279,14 @@ MSU.NestedTooltip = {
 			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 	},
+	clearTimeouts : function(_data)
+	{
+		if (_data.updateStackTimeout !== undefined && _data.updateStackTimeout !== null)
+		{
+			clearTimeout(_data.updateStackTimeout);
+			_data.updateStackTimeout = null;
+		}
+	},
 	getTooltipFromData : function (_backendData, _contentType)
 	{
 		var tempContainer = Screens.TooltipScreen.mTooltipModule.mContainer;
