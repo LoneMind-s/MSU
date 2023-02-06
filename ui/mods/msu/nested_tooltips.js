@@ -95,10 +95,9 @@ MSU.NestedTooltip = {
 		{
 			var pairData = this.__tooltipStack[i];
 			if ((pairData.source.isHovered && pairData.source.container.is(":visible")) || (pairData.tooltip.isHovered && pairData.tooltip.container.is(":visible")))
-				return false;
+				return;
 			this.removeTooltip(pairData, i);
 		}
-		return true;
 	},
 	clearStack : function ()
 	{
@@ -368,7 +367,8 @@ TooltipModule.prototype.showTileTooltip = function()
 		return;
 	}
 	MSU.NestedTooltip.TileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
-	if (MSU.NestedTooltip.updateStack())
+	MSU.NestedTooltip.updateStack();
+	if (MSU.NestedTooltip.isStackEmpty())
 		MSU.NestedTooltip.onShowTooltipTimerExpired(MSU.NestedTooltip.TileTooltipDiv.container, this.mCurrentData);
 };
 
