@@ -122,8 +122,7 @@ MSU.NestedTooltip = {
 		var data = _sourceContainer.data("msu-nested");
 		if (data === undefined)
 			return;
-		if (data.updateStackTimeout !== null)
-			clearTimeout(data.updateStackTimeout);
+		this.clearTimeouts(data);
 		_sourceContainer.removeData('msu-nested');
 	},
 	cleanTooltipContainer : function(_tooltipContainer)
@@ -221,32 +220,22 @@ MSU.NestedTooltip = {
 			{
 				progressImage.velocity("finish");
 			}
-
 		})
 	},
 	addSourceContainerMouseHandler : function(_sourceContainer)
 	{
 		var self = this;
+		var sourceData = _sourceContainer.data('msu-nested');
 		_sourceContainer.on('mouseenter.msu-tooltip-showing', function(_event)
 		{
-			var data = $(this).data('msu-nested');
-			data.isHovered = true;
-			if (data.updateStackTimeout !== null)
-			{
-				clearTimeout(data.updateStackTimeout);
-				data.updateStackTimeout = null;
-			}
+			self.clearTimeouts(sourceData);
+			sourceData.isHovered = true;
 		});
 		_sourceContainer.on('mouseleave.msu-tooltip-showing remove.msu-tooltip-showing', function (_event)
 		{
-			var data = $(this).data('msu-nested');
-			if (data === undefined) // not sure when this comes up, but sometimes it does, and the game errors unless we do this
-			{
-				self.updateStack();
-				return;
-			}
-			data.isHovered = false;
-			data.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
+			self.clearTimeouts(sourceData);
+			sourceData.isHovered = false;
+			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 	},
 	addTooltipContainerMouseHandler : function(_tooltipContainer, _sourceContainer)
