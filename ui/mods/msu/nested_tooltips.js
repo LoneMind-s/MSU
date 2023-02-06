@@ -1,7 +1,7 @@
 MSU.NestedTooltip = {
 	__regexp : /(?:\[|&#91;)tooltip=([\w\.]+?)\.([\w\.]+)(?:\]|&#93;)(.*?)(?:\[|&#91;)\/tooltip(?:\]|&#93;)/gm,
 	__tooltipStack : [],
-	__tooltipHideDelay : 200,
+	__tooltipHideDelay : 100,
 	__tooltipShowDelay : 200,
 	TileTooltipDiv : {
 		container : $("<div class='msu-tile-div'/>").appendTo($(document.body)),
