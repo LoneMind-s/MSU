@@ -82,6 +82,8 @@ MSU.NestedTooltip = {
 			{
 				$.each(this.__tooltipStack[0].dataToPass, function(_key, _value)
 				{
+					if (_key in _tooltipParams)
+						return;
 					_tooltipParams[_key] = _value;
 				})
 			}
