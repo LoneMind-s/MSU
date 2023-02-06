@@ -28,9 +28,9 @@ MSU.NestedTooltip = {
 		if (data !== undefined)
 		{
 			data.isHovered = false;
-			this.updateStack();
 		}
 		_element.off('.msu-tooltip-source');
+		this.updateStack();
 	},
 	getBindFunction : function (_tooltipParams)
 	{
