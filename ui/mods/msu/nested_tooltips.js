@@ -57,15 +57,23 @@ MSU.NestedTooltip = {
 		_sourceContainer.off('.msu-tooltip-loading');
 		// ghetto clone to get new ref
 		_tooltipParams = JSON.parse(JSON.stringify(_tooltipParams));
-		// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
+
 		if (this.__tooltipStack.length > 0)
 		{
-			$.each(this.__tooltipStack[0].dataToPass, function(_key, _value)
+			// check if this is within the same chain of nested tooltips, or if we need to clear the stack and start a new chain
+			if (this.__tooltipStack[this.__tooltipStack.length -1].tooltip.container.find(_sourceContainer).length === 0)
 			{
-				_tooltipParams[_key] = _value;
-			})
+				self.clearStack();
+			}
+			// If we already have tooltips in the stack, we want to fetch the one from the first tooltip that will have received the entityId from the vanilla function
+			else
+			{
+				$.each(this.__tooltipStack[0].dataToPass, function(_key, _value)
+				{
+					_tooltipParams[_key] = _value;
+				})
+			}
 		}
-
 		Screens.TooltipScreen.mTooltipModule.notifyBackendQueryTooltipData(_tooltipParams, function (_backendData)
 		{
 			if (_backendData === undefined || _backendData === null)
