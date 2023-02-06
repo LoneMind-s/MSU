@@ -29,7 +29,7 @@ MSU.NestedTooltip = {
 			this.container.hide();
 		}
 	},
-	KeyImgMap : {},this.container.hide();
+	KeyImgMap : {},
 	bindToElement : function (_element, _tooltipParams)
 	{
 		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_tooltipParams));
