@@ -175,7 +175,7 @@ MSU.NestedTooltip = {
 
 		this.addSourceContainerMouseHandler(_sourceContainer);
 
-		this.addTooltipContainerMouseHandler(tooltipContainer, _sourceContainer);
+		this.addTooltipContainerMouseHandler(tooltipContainer);
 
 		$('body').append(tooltipContainer)
 		this.positionTooltip(tooltipContainer, _backendData, _sourceContainer);
@@ -238,7 +238,7 @@ MSU.NestedTooltip = {
 			sourceData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 	},
-	addTooltipContainerMouseHandler : function(_tooltipContainer, _sourceContainer)
+	addTooltipContainerMouseHandler : function(_tooltipContainer)
 	{
 		var self = this;
 		var tooltipData = _tooltipContainer.data("msu-nested");
