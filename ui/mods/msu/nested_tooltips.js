@@ -145,7 +145,6 @@ MSU.NestedTooltip = {
 		var tooltipData = {
 			container : tooltipContainer,
 			updateStackTimeout : null,
-			opacityTimeout : null,
 			isHovered : false,
 			isLocked : false,
 			sourceContainer : _sourceContainer
@@ -250,7 +249,6 @@ MSU.NestedTooltip = {
 				self.cleanSourceContainer(_sourceContainer);
 				return;
 			}
-			$(this).removeClass("msu-nested-tooltip-not-hovered");
 			tooltipData.isHovered = true;
 			if (tooltipData.updateStackTimeout !== null)
 			{
@@ -261,14 +259,13 @@ MSU.NestedTooltip = {
 			{
 				clearTimeout(tooltipData.opacityTimeout);
 				tooltipData.opacityTimeout = null;
+				$(".ui-control-tooltip-module").addClass("msu-nested-tooltip-not-hovered");
+				_tooltipContainer.removeClass("msu-nested-tooltip-not-hovered");
 			}
 		});
 		_tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
 		{
 			tooltipData.isHovered = false;
-			tooltipData.opacityTimeout = setTimeout(function(){
-				_tooltipContainer.addClass("msu-nested-tooltip-not-hovered");
-			}, self.__tooltipHideDelay);
 			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
 	},
