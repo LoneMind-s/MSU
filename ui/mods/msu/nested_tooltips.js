@@ -13,11 +13,23 @@ MSU.NestedTooltip = {
 		shrink : function()
 		{
 			// this.container.css({width: "0", height: "0"})
+			// this.container.trigger('mouseleave.msu-tooltip-showing');
+			var sourceData = this.container.data("msu-nested");
+			if (sourceData !== undefined && sourceData !== null)
+			{
+				var tooltipData = sourceData.tooltipContainer.data("msu-nested");
+				if (tooltipData !== undefined && tooltipData.isLocked)
+				{
+					return;
+				}
+				MSU.NestedTooltip.clearTimeouts(sourceData);
+				sourceData.isHovered = false;
+				MSU.NestedTooltip.updateStack();
+			}
 			this.container.hide();
-			this.container.trigger('mouseleave.msu-tooltip-showing');
 		}
 	},
-	KeyImgMap : {},
+	KeyImgMap : {},this.container.hide();
 	bindToElement : function (_element, _tooltipParams)
 	{
 		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_tooltipParams));
@@ -356,7 +368,6 @@ $(document).on('mouseenter.msu-tooltip-source', '.msu-nested-tooltip', function(
 TooltipModule.prototype.showTileTooltip = function()
 {
 	// increase range so it's less jittery
-	this.mMinMouseMovement = 20;
 	if (this.mCurrentData === undefined || this.mCurrentData === null)
 	{
 		return;
