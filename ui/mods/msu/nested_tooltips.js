@@ -100,7 +100,6 @@ MSU.NestedTooltip = {
 		}
 		return true;
 	},
-	removeTooltip : function (_pairData, _idx)
 	clearStack : function ()
 	{
 		for (var i = this.__tooltipStack.length - 1; i >= 0; i--)
@@ -108,6 +107,11 @@ MSU.NestedTooltip = {
 			this.removeTooltip(this.__tooltipStack[i]);
 		}
 	},
+	isStackEmpty : function ()
+	{
+		return this.__tooltipStack.length === 0;
+	},
+	removeTooltip : function (_pairData)
 	{
 		this.cleanSourceContainer(_pairData.source.container);
 		if (_pairData.tooltip.updateStackTimeout !== null)
