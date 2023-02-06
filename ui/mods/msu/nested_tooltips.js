@@ -101,6 +101,13 @@ MSU.NestedTooltip = {
 		return true;
 	},
 	removeTooltip : function (_pairData, _idx)
+	clearStack : function ()
+	{
+		for (var i = this.__tooltipStack.length - 1; i >= 0; i--)
+		{
+			this.removeTooltip(this.__tooltipStack[i]);
+		}
+	},
 	{
 		this.cleanSourceContainer(_pairData.source.container);
 		if (_pairData.tooltip.updateStackTimeout !== null)
