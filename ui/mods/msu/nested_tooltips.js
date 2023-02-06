@@ -113,10 +113,8 @@ MSU.NestedTooltip = {
 	removeTooltip : function (_pairData)
 	{
 		this.cleanSourceContainer(_pairData.source.container);
-		if (_pairData.tooltip.updateStackTimeout !== null)
-			clearTimeout(_pairData.tooltip.updateStackTimeout);
-		_pairData.tooltip.container.remove();
-		this.__tooltipStack.splice(_idx, 1);
+		this.cleanTooltipContainer(_pairData.tooltip.container);
+		this.__tooltipStack.pop();
 	},
 	cleanSourceContainer : function(_sourceContainer)
 	{
@@ -127,6 +125,12 @@ MSU.NestedTooltip = {
 		if (data.updateStackTimeout !== null)
 			clearTimeout(data.updateStackTimeout);
 		_sourceContainer.removeData('msu-nested');
+	},
+	cleanTooltipContainer : function(_tooltipContainer)
+	{
+		var data = _tooltipContainer.data("msu-nested");
+		this.clearTimeouts(data);
+		_tooltipContainer.remove();
 	},
 	createTooltip : function (_backendData, _sourceContainer, _tooltipParams)
 	{
