@@ -243,28 +243,25 @@ MSU.NestedTooltip = {
 		var tooltipData = _tooltipContainer.data("msu-nested");
 		_tooltipContainer.on('mouseenter.msu-tooltip-container', function (_event)
 		{
+			self.clearTimeouts(tooltipData);
+			tooltipData.isHovered = true;
 			if (!tooltipData.isLocked)
 			{
-				$(this).hide();
-				self.cleanSourceContainer(_sourceContainer);
-				return;
+				_tooltipContainer.hide();
+				setTimeout(function(){
+					self.cleanSourceContainer(tooltipData.sourceContainer);
+					return;
+				}, self.__tooltipHideDelay)
 			}
-			tooltipData.isHovered = true;
-			if (tooltipData.updateStackTimeout !== null)
+			else
 			{
-				clearTimeout(tooltipData.updateStackTimeout);
-				tooltipData.updateStackTimeout = null;
-			}
-			if( tooltipData.opacityTimeout !== null)
-			{
-				clearTimeout(tooltipData.opacityTimeout);
-				tooltipData.opacityTimeout = null;
 				$(".ui-control-tooltip-module").addClass("msu-nested-tooltip-not-hovered");
 				_tooltipContainer.removeClass("msu-nested-tooltip-not-hovered");
 			}
 		});
 		_tooltipContainer.on('mouseleave.msu-tooltip-container', function (_event)
 		{
+			self.clearTimeouts(tooltipData);
 			tooltipData.isHovered = false;
 			tooltipData.updateStackTimeout = setTimeout(self.updateStack.bind(self), self.__tooltipHideDelay);
 		});
