@@ -61,32 +61,40 @@
 
 	function getTooltip( _modID, _identifier )
 	{
-		local fullKey = split(_identifier, ".");
+		local arr = split(_identifier, "+");
+		local fullKey = split(arr[0], ".");
+		local extraData;
+		switch (arr.len())
+		{
+			case 1:
+				break;
+
+			case 2:
+				extraData = arr[1];
+				break;
+
+			default:
+				arr.slice(1).reduce(@(a, b) a + "+" + b);
+				break;
+		}
+
 		local currentTable = this.Mods[_modID];
 		for (local i = 0; i < fullKey.len(); ++i)
 		{
 			local currentKey = fullKey[i];
-			if (currentKey in currentTable && currentTable[currentKey] instanceof ::MSU.Class.Tooltip)
-			{
-				local data = fullKey.slice(i+1).reduce( @(_a, _b) _a + "." + _b);
-				return {
-					Tooltip = currentTable[currentKey],
-					Data = data
-				}
-			}
 			currentTable = currentTable[currentKey];
 		}
 		return {
 			Tooltip = currentTable,
-			Data = null
-		}
+			Data = extraData
+		};
 	}
 
 	function hasKey( _modID, _key )
 	{
-		local fullKey = split(_key, ".");
+		local fullKey = split(split(_key, "+")[0], ".");
 		local currentTable = this.Mods[_modID];
-		for (local i = 0; i < fullKey.len() - 1; ++i) // ignore last entry as that is ExtraData
+		for (local i = 0; i < fullKey.len(); ++i)
 		{
 			local currentKey = fullKey[i];
 			if (!(currentKey in currentTable))
