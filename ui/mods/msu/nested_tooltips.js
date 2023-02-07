@@ -3,6 +3,7 @@ MSU.NestedTooltip = {
 	__tooltipStack : [],
 	__tooltipHideDelay : 100,
 	__tooltipShowDelay : 200,
+	KeyImgMap : {},
 	TileTooltipDiv : {
 		container : $("<div class='msu-tile-div'/>").appendTo($(document.body)),
 		expand : function(_newPosition)
@@ -12,8 +13,6 @@ MSU.NestedTooltip = {
 		},
 		shrink : function()
 		{
-			// this.container.css({width: "0", height: "0"})
-			// this.container.trigger('mouseleave.msu-tooltip-showing');
 			var sourceData = this.container.data("msu-nested");
 			if (sourceData !== undefined && sourceData !== null)
 			{
@@ -41,7 +40,6 @@ MSU.NestedTooltip = {
 			this.container.trigger('mouseenter.msu-tooltip-source');
 		}
 	},
-	KeyImgMap : {},
 	reloadTooltip : function(_element, _newParams)
 	{
 		if (this.__tooltipStack.length === 0)
