@@ -42,6 +42,20 @@ MSU.NestedTooltip = {
 		}
 	},
 	KeyImgMap : {},
+	reloadTooltip : function(_element, _newParams)
+	{
+		if (this.__tooltipStack.length === 0)
+			return;
+		var sourceData = this.__tooltipStack[0].source;
+		var sourceContainer = sourceData.container;
+		var sourceParams = sourceData.tooltipParams;
+		if (_element !== undefined && !_element.is(sourceContainer))
+			return;
+		this.clearStack();
+		this.unbindFromElement(sourceContainer);
+		this.bindToElement(sourceContainer, _newParams || sourceParams);
+		sourceContainer.trigger('mouseenter.msu-tooltip-source');
+	},
 	bindToElement : function (_element, _tooltipParams)
 	{
 		_element.on('mouseenter.msu-tooltip-source', this.getBindFunction(_tooltipParams));
@@ -165,7 +179,8 @@ MSU.NestedTooltip = {
 			container : _sourceContainer,
 			updateStackTimeout : null,
 			isHovered : true,
-			tooltipContainer : tooltipContainer
+			tooltipContainer : tooltipContainer,
+			tooltipParams : _tooltipParams
 		};
 		_sourceContainer.data('msu-nested', sourceData);
 		var tooltipData = {
@@ -400,4 +415,23 @@ TooltipModule.prototype.hideTileTooltip = function()
 	MSU.NestedTooltip.TileTooltipDiv.shrink();
 	MSU.NestedTooltip.TileTooltipDiv.unbind();
 	MSU.TooltipModule_hideTileTooltip.call(this);
+};
+
+$.fn.updateTooltip = function (_newParams)
+{
+    if (Screens.Tooltip === null || !Screens.Tooltip.isConnected())
+    {
+        return;
+    }
+
+    var tooltip = Screens.Tooltip.getModule('TooltipModule');
+    if (tooltip !== null)
+    {
+        MSU.NestedTooltip.reloadTooltip(this, _newParams);
+	}
+};
+
+TooltipModule.prototype.reloadTooltip = function()
+{
+	MSU.NestedTooltip.reloadTooltip();
 };
