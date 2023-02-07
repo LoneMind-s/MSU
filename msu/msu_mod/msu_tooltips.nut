@@ -1,6 +1,10 @@
 ::MSU.Mod.Tooltips.setTooltips({
 	CharacterStats = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIElementTooltipData(null, "character-stats." + _data.ExtraData, null)),
 	Perk = ::MSU.Class.CustomTooltip(@(_data) ::TooltipEvents.general_queryUIPerkTooltipData(null, _data.ExtraData)),
+	Skill = ::MSU.Class.CustomTooltip(function(_data) {
+		local arr = split(_data.ExtraData, ",");
+		return ::TooltipEvents.general_querySkillNestedTooltipData("entityId" in data ? data.entityId : null, arr.len() > 1 ? arr[1] : null, arr[0])
+	}),
 	ModSettings = {
 		Main = {
 			Cancel = ::MSU.Class.BasicTooltip("Cancel", "Don't save changes."),
