@@ -27,6 +27,18 @@ MSU.NestedTooltip = {
 				MSU.NestedTooltip.updateStack();
 			}
 			this.container.hide();
+		},
+		bind : function(_params)
+		{
+			MSU.NestedTooltip.bindToElement(this.container, _params);
+		},
+		unbind : function()
+		{
+			MSU.NestedTooltip.unbindFromElement(this.container);
+		},
+		trigger : function()
+		{
+			this.container.trigger('mouseenter.msu-tooltip-source');
 		}
 	},
 	KeyImgMap : {},
@@ -369,7 +381,6 @@ $(document).on('mouseenter.msu-tooltip-source', '.msu-nested-tooltip', function(
 
 TooltipModule.prototype.showTileTooltip = function()
 {
-	// increase range so it's less jittery
 	if (this.mCurrentData === undefined || this.mCurrentData === null)
 	{
 		return;
@@ -377,12 +388,16 @@ TooltipModule.prototype.showTileTooltip = function()
 	MSU.NestedTooltip.TileTooltipDiv.expand({top: this.mLastMouseY - 30, left:this.mLastMouseX - 30});
 	MSU.NestedTooltip.updateStack();
 	if (MSU.NestedTooltip.isStackEmpty())
-		MSU.NestedTooltip.onShowTooltipTimerExpired(MSU.NestedTooltip.TileTooltipDiv.container, this.mCurrentData);
+	{
+		MSU.NestedTooltip.TileTooltipDiv.bind(this.mCurrentData);
+		MSU.NestedTooltip.TileTooltipDiv.trigger();
+	}
 };
 
 MSU.TooltipModule_hideTileTooltip = TooltipModule.prototype.hideTileTooltip;
 TooltipModule.prototype.hideTileTooltip = function()
 {
 	MSU.NestedTooltip.TileTooltipDiv.shrink();
+	MSU.NestedTooltip.TileTooltipDiv.unbind();
 	MSU.TooltipModule_hideTileTooltip.call(this);
 };
