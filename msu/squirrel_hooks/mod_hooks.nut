@@ -206,7 +206,10 @@ local _mods_runQueue = ::_mods_runQueue;
 
 	if (::MSU.QueueErrors.Errors != "")
 	{
-		::MSU.Popup.showRawText(::MSU.QueueErrors.Errors, true);
+		::MSU.Popup.addMessage(::MSU.QueueErrors.Errors);
+		::MSU.Popup.setForceQuit(true);
+		::MSU.Popup.setTitle("Fatal mod error");
+		::MSU.Popup.setState(::MSU.Popup.m.States.Full);
 		throw ::MSU.QueueErrors.Errors;
 	}
 
@@ -214,7 +217,10 @@ local _mods_runQueue = ::_mods_runQueue;
 
 	if (::MSU.QueueErrors.Errors != "")
 	{
-		::MSU.Popup.showRawText(::MSU.QueueErrors.Errors, true);
+		::MSU.Popup.addMessage(::MSU.QueueErrors.Errors);
+		::MSU.Popup.setForceQuit(true);
+		::MSU.Popup.setTitle("Fatal mod error");
+		::MSU.Popup.setState(::MSU.Popup.m.States.Full);
 		throw ::MSU.QueueErrors.Errors;
 	}
 }
