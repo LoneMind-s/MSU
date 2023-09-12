@@ -6,6 +6,7 @@
 ::mods_registerJS("msu/ui_hooks/main_menu_module.js");
 ::mods_registerJS("msu/ui_hooks/main_menu_screen.js");
 ::mods_registerJS("msu/ui_hooks/tooltip_module.js");
+::mods_registerJS("msu/ui_hooks/turnsequencebar_module.js");
 
 ::mods_registerJS("msu/backend_connection.js");
 ::mods_registerJS("msu/msu_connection.js");

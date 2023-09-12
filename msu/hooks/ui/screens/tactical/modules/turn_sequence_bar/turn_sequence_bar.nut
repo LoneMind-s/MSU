@@ -8,6 +8,10 @@
 	local setActiveEntityCostsPreview = o.setActiveEntityCostsPreview;
 	o.setActiveEntityCostsPreview = function( _costsPreview )
 	{
+		this.m.JSHandle.asyncCall("MSU_setCanUpdateCostsPreview", false);
+
+		local ret = setActiveEntityCostsPreview(_costsPreview);
+
 		if (::MSU.Mod.ModSettings.getSetting("ExpandedSkillTooltips").getValue())
 		{
 			local activeEntity = this.getActiveEntity();
@@ -28,7 +32,10 @@
 			}
 		}
 
-		setActiveEntityCostsPreview(_costsPreview);
+		this.m.JSHandle.asyncCall("MSU_setCanUpdateCostsPreview", true);
+		this.m.JSHandle.asyncCall("updateCostsPreview", this.m.ActiveEntityCostsPreview);
+
+		return ret;
 	}
 
 	local resetActiveEntityCostsPreview = o.resetActiveEntityCostsPreview;
