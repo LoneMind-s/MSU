@@ -94,4 +94,35 @@
 
 		return unequip(_item);
 	}
+
+	q.getItemsByFunction <- function( _function )
+	{
+		local ret = [];
+
+		foreach (slot, spaces in ::Const.ItemSlotSpaces)
+		{
+			for (local i = 0; i < spaces; i++)
+			{
+				local item = this.m.Items[slot][i];
+				if (item != null && item != -1 && _function(item))
+					ret.push(item);
+			}
+		}
+
+		return ret;
+	}
+
+	q.getItemsByFunctionAtSlot <- function( _slot, _function )
+	{
+		local ret = [];
+
+		for (local i = 0; i < ::Const.ItemSlotSpaces[_slot]; i++)
+		{
+			local item = this.m.Items[_slot][i];
+			if (item != null && item != -1 && _function(item))
+				ret.push(item);
+		}
+
+		return ret;
+	}
 });
