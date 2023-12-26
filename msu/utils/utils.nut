@@ -238,10 +238,11 @@
 		foreach (i, functionEntry in _functions)
 		{
 			local timeStart = timer.silentGet();
+			local f = functionEntry[1];
 
 			for (local j = 0; j < _iterations; j++)
 			{
-				functionEntry[1]();
+				f();
 			}
 
 			local totalTime = timer.silentGet() - timeStart;
